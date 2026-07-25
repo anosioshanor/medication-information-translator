@@ -1,4 +1,4 @@
-streanlit
+streamlit
 requests
 google-generativeai
 python-dotenv
