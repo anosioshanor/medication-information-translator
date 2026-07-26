@@ -35,9 +35,19 @@ class FDAClient:
                 f"Invalid medication name: '{drug_name}'."
             )
 
+        # Handle common medication name differences
+        drug_aliases = {
+            "paracetamol": "acetaminophen"
+        }
+
+        search_name = drug_aliases.get(
+            drug_name.lower(),
+            drug_name
+        )
+
         query = (
-            f'openfda.brand_name:"{drug_name}" '
-            f'OR openfda.generic_name:"{drug_name}"'
+            f'openfda.brand_name:"{search_name}" '
+            f'OR openfda.generic_name:"{search_name}"'
         )
 
         params = {
@@ -60,7 +70,6 @@ class FDAClient:
                 timeout=self.timeout
             )
 
-            # Print the final URL that requests sends
             print("Final URL Sent:")
             print(response.url)
             print()
@@ -80,6 +89,11 @@ class FDAClient:
             )
 
         except requests.exceptions.HTTPError as e:
+            if response.status_code == 404:
+                raise LookupError(
+                    f"No FDA information found for '{drug_name}'."
+                )
+
             raise Exception(
                 f"HTTP Error: {e}"
             )
