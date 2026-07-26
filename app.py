@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-import streamlit as st
-st.title("Medication Information Translator")
-st.write(
-    "Search for a medication to view its uses, warnings, side effects, recall status, and a simplified AI explanation"
-)
-
-medication_name = st.text_input("Enter a medication name")
-
-search = st.button("Search")
-=======
 import streamlit as st
 from services.ai_translator import AITranslator
 
@@ -167,4 +156,3 @@ st.caption(
     "By NCAIR COHORT 36 GROUP 1 PYTHON ADVANCED. "
     "Always consult a healthcare professional for medical advice."
 )
->>>>>>> 1c4b1a817e8477bc37f4dd9f354dd5de37cdd551
