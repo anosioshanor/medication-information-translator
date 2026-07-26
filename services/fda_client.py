@@ -2,7 +2,7 @@ import json
 import requests
 from typing import Dict, Any, Optional
 
-from utils import validate_medication_name, format_drug_info
+from services.utils import format_drug_info, validate_medication_name, format_drug_info
 
 
 class FDAClient:

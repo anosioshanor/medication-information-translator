@@ -1,4 +1,5 @@
 import streamlit as st
+from services.fda_client import FDAClient
 from services.ai_translator import AITranslator
 
 # ============================================================
@@ -13,6 +14,7 @@ st.set_page_config(
 
 # Initialize AI Translator
 translator = AITranslator()
+fda_client = FDAClient()
 
 # Custom Styling
 st.markdown("""
@@ -71,13 +73,23 @@ if search_button:
                 # medical_text = fda_client.get_medication_info(cleaned_name)
                 # ============================================================
                 
-                # TEMPORARY PLACEHOLDER - ??? WILL REPLACE THIS
+                result = fda_client.fetch_drug_info(cleaned_name)
+                fda_data = result["extracted"]
+
                 medical_text = f"""
-                Information about {cleaned_name}.
-                This medication is used for treatment of various conditions.
-                Follow dosage instructions carefully.
-                May cause side effects in some patients.
-                Consult your healthcare provider for more information.
+                Medication: {cleaned_name}
+
+                Uses:
+                {fda_data.get("usage", "No usage information available.")}
+
+                Warnings:
+                {fda_data.get("warnings", "No warnings available.")}
+
+                Side Effects:
+                {fda_data.get("side_effects", "No side effects available.")}
+
+                Dosage:
+                {fda_data.get("instructions", "No dosage information available.")}
                 """
                 
                 # ============================================================
@@ -109,32 +121,25 @@ if search_button:
                 #     st.container(border=True).markdown(f"### ⚠️ Warnings\n\n{fda_data['warnings']}")
                 # ============================================================
                 
-                # TEMPORARY PLACEHOLDER DISPLAY - YOU WILL REPLACE THIS
                 col1, col2 = st.columns(2)
+
                 with col1:
                     st.container(border=True).markdown(
-                        """
-                        ### ✅ Uses
-                        
-                        • Treatment of pain and inflammation
-                        • Fever reduction
-                        • Relief of symptoms
-                        
-                        *Please consult your healthcare provider for specific uses.*
-                        """
+                        f"""
+### ✅ Uses
+
+{fda_data.get("usage", "No usage information available.")}
+"""
                     )
+
                 with col2:
                     st.container(border=True).markdown(
-                        """
-                        ### ⚠️ Warnings
-                        
-                        • Do not exceed recommended dosage
-                        • May cause allergic reactions
-                        • Consult doctor if pregnant or nursing
-                        
-                        *Always read the label carefully.*
-                        """
-                    )
+                        f"""
+### ⚠️ Warnings
+
+{fda_data.get("warnings", "No warnings available.")}
+"""
+                    ) 
                 
                 # ============================================================
                 # MY TASK: Display AI Simplified Explanation
