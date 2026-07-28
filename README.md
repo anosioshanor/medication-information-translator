@@ -153,7 +153,7 @@ The application handles:
 - Drug recall notifications
 - Voice assisted interaction
 - Search suggestions for misspelled medication names
-- Search history and bookmarks
+
 
 ---
 
