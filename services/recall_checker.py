@@ -2,20 +2,20 @@ import json
 import requests
 from typing import Dict, Any, Optional
 
-from utils import validate_medication_name, format_drug_info
+from services.utils import validate_medication_name
 
 
-class FDAClient:
+class RecallChecker:
     """
-    Client for interacting with the openFDA Drug Label API.
+    Client for interacting with the openFDA Drug Enforcement API.
 
     Responsibilities:
     - Validate medication names.
-    - Retrieve medication information.
-    - Format API responses.
+    - Check whether a medication has been recalled.
+    - Return recall details.
     """
 
-    BASE_URL = "https://api.fda.gov/drug/label.json"
+    BASE_URL = "https://api.fda.gov/drug/enforcement.json"
 
     def __init__(self, timeout: int = 10):
         self.timeout = timeout
@@ -25,40 +25,24 @@ class FDAClient:
             "User-Agent": "MedicationInformationTranslator/1.0"
         })
 
-    def fetch_drug_info(self, drug_name: str) -> Dict[str, Any]:
+    def check_recall(self, medication_name: str) -> Dict[str, Any]:
         """
-        Fetch medication information from the openFDA API.
+        Checks if a medication has any recall records.
 
         Args:
-            drug_name (str): Name of the medication.
+            medication_name (str): Name of the medication to check.
 
         Returns:
-            dict:
-                {
-                    "drug_name": str,
-                    "raw": dict,
-                    "extracted": dict
-                }
-
-        Raises:
-            ValueError
-            ConnectionError
-            LookupError
-            Exception
+            Dict[str, Any]: Recall information.
         """
 
-        if not validate_medication_name(drug_name):
+        if not validate_medication_name(medication_name):
             raise ValueError(
-                f"Invalid medication name: '{drug_name}'."
+                f"Invalid medication name: '{medication_name}'."
             )
 
-        query = (
-            f'openfda.brand_name:"{drug_name}" '
-            f'OR openfda.generic_name:"{drug_name}"'
-        )
-
         params = {
-            "search": query,
+            "search": f'openfda.brand_name:"{medication_name}"',
             "limit": 1
         }
 
@@ -73,86 +57,67 @@ class FDAClient:
 
             data = response.json()
 
+            if "results" not in data:
+                return {
+                    "recalled": False,
+                    "message": "No recall found for this medication."
+                }
+
+            recall = data["results"][0]
+
+            return {
+                "recalled": True,
+                "reason": recall.get("reason_for_recall", "No reason provided"),
+                "company": recall.get("recalling_firm", "Unknown company"),
+                "date": recall.get("report_date", "Unknown date"),
+                "product": recall.get(
+                    "product_description",
+                    "No product description available"
+                )
+            }
+
         except requests.exceptions.Timeout:
-            raise ConnectionError(
-                "Request timed out."
-            )
+            return {
+                "recalled": False,
+                "message": "The request timed out. Please try again."
+            }
 
-        except requests.exceptions.ConnectionError:
-            raise ConnectionError(
-                "Could not connect to the openFDA API."
-            )
+        except requests.exceptions.RequestException as e:
+            return {
+                "recalled": False,
+                "message": f"An API error occurred: {str(e)}"
+            }
 
-        except requests.exceptions.HTTPError as e:
-            raise Exception(
-                f"HTTP Error: {e}"
-            )
+        except Exception as e:
+            return {
+                "recalled": False,
+                "message": f"An unexpected error occurred: {str(e)}"
+            }
 
-        except json.JSONDecodeError:
-            raise Exception(
-                "Invalid JSON received from the API."
-            )
-
-        if not data.get("results"):
-            raise LookupError(
-                f"No information found for '{drug_name}'."
-            )
-
-        extracted_info = format_drug_info(data)
-
-        return {
-            "drug_name": drug_name,
-            "raw": data,
-            "extracted": extracted_info
-        }
-
-    def fetch_warnings_only(
-        self,
-        drug_name: str
-    ) -> Optional[str]:
-        """
-        Return only the warnings section
-        for a medication.
-        """
-
-        try:
-            result = self.fetch_drug_info(drug_name)
-            return result["extracted"].get("warnings", "")
-
-        except Exception:
-            return None
-
-
-# ----------------------------------------------------
-# Test this module independently
-# ----------------------------------------------------
 
 if __name__ == "__main__":
+    print("✅ Program started!")
 
-    client = FDAClient()
+    checker = RecallChecker()
+
+    print("✅ RecallChecker object created!")
 
     drug = input("Enter medication name: ")
 
     try:
+        result = checker.check_recall(drug)
 
-        result = client.fetch_drug_info(drug)
-
-        print("\nMedication Information\n")
-
-        print(f"Drug: {result['drug_name']}")
+        print("\nRecall Check Result\n")
         print("-" * 50)
 
-        print("\nUsage:\n")
-        print(result["extracted"]["usage"])
-
-        print("\nWarnings:\n")
-        print(result["extracted"]["warnings"])
-
-        print("\nSide Effects:\n")
-        print(result["extracted"]["side_effects"])
-
-        print("\nInstructions:\n")
-        print(result["extracted"]["instructions"])
+        if result["recalled"]:
+            print("⚠️ Recall Found!")
+            print(f"Reason: {result['reason']}")
+            print(f"Company: {result['company']}")
+            print(f"Date: {result['date']}")
+            print(f"Product: {result['product']}")
+        else:
+            print(result["message"])
 
     except Exception as e:
         print("\nError:", e)
