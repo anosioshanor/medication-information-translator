@@ -29,6 +29,7 @@ The application presents this information through a clean and user-friendly inte
 -  Display possible side effects
 -  Friendly error handling for invalid medication names
 -  Simple and responsive Streamlit interface
+-  Checks whether a seached medication has been recalled and displays recall details when available
 
 ---
 
@@ -137,10 +138,10 @@ The application handles:
 
 | Team Member | Contribution |
 |-------------|--------------|
-| **Anosi Oshanor** | **Project Lead**, Main Application (`app.py`) development, Streamlit user interface development, FDA API integration, AI translator integration, module integration, debugging, testing, Git/GitHub integration, application refinement, quality assurance, final documentation and project deployment |
+| **Anosi Oshanor** | **Project Lead**, Main Application (`app.py`) development, Streamlit UI refinement and integration, FDA API integration, AI translator integration, module integration, debugging, testing, Git/GitHub integration, application refinement, quality assurance, final documentation and project deployment |
 | **Muhammad Omeiza** | Medication Model (`medication.py`) development and data modelling |
-| **Tremendous Dansale** | Medication Information & Safety Terms module (FDA data retrieval and processing) |
-| **Blessing Afaha** | AI Medical Translator module (OpenRouter API integration and translation logic) |
+| **Tremendous Dansale** | Medication Information & Safety Terms module (FDA data retrieval and processing), Drug Recall Checker integration using the openFDA Drug Enforcement API. |
+| **Blessing Afaha** | AI Medical Translator module (OpenRouter API integration and translation logic), Streamlit user interface development. |
 | **Joey Fidelis** | Search History module (search history storage and retrieval) |
 | **Khalil Bashir** | User guide preparation and documentation support |
 
@@ -150,7 +151,6 @@ The application handles:
 
 - Multi language translation
 - Medication comparison
-- Drug recall notifications
 - Voice assisted interaction
 - Search suggestions for misspelled medication names
 
